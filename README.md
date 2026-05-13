@@ -1,0 +1,58 @@
+# mcp-estat-japan
+
+e-Stat (Japan) MCP — government statistics
+
+Part of [Pipeworx](https://pipeworx.io) — an MCP gateway connecting AI agents to 250+ live data sources.
+
+## Tools
+
+| Tool | Description |
+|------|-------------|
+| `get_metadata` | Fetch dimensions and code lists for a stats table. |
+| `get_data` | Fetch observations from a stats table. Optionally filter by dimension codes. |
+| `list_data_catalog` | Browse the high-level data catalog (table groupings). |
+
+## Quick Start
+
+Add to your MCP client (Claude Desktop, Cursor, Windsurf, etc.):
+
+```json
+{
+  "mcpServers": {
+    "estat-japan": {
+      "url": "https://gateway.pipeworx.io/estat-japan/mcp"
+    }
+  }
+}
+```
+
+Or connect to the full Pipeworx gateway for access to all 250+ data sources:
+
+```json
+{
+  "mcpServers": {
+    "pipeworx": {
+      "url": "https://gateway.pipeworx.io/mcp"
+    }
+  }
+}
+```
+
+## Using with ask_pipeworx
+
+Instead of calling tools directly, you can ask questions in plain English:
+
+```
+ask_pipeworx({ question: "your question about Estat Japan data" })
+```
+
+The gateway picks the right tool and fills the arguments automatically.
+
+## More
+
+- [All tools and guides](https://github.com/pipeworx-io/examples)
+- [pipeworx.io](https://pipeworx.io)
+
+## License
+
+MIT
