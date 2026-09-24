@@ -2,14 +2,14 @@
 
 e-Stat (Japan) MCP — Japanese government statistics aggregator (~5000 tables across population, economy, labor, trade, prices, agriculture, environment). Free with an app ID.
 
-Part of [Pipeworx](https://pipeworx.io) — an MCP gateway connecting AI agents to 1476+ live data sources.
+Part of [Pipeworx](https://pipeworx.io) — an MCP gateway connecting AI agents to 1679+ live data sources.
 
 ## Tools
 
 - `search_stats(query, limit?, start_position?, lang?)` — find stats tables
 - `get_metadata(stats_data_id, lang?)` — dimensions + code lists for a table
 - `get_data(stats_data_id, limit?, start_position?, lang?, filters?)` — observations
-- `list_data_catalog(query?, limit?, start_position?, lang?)` — browse catalog
+- `list_data_catalog(query?, limit?, start_position?, lang?, data_type?, survey_years?, stats_code?, stats_field?)` — browse catalog
 
 ## Auth
 
@@ -21,6 +21,29 @@ Part of [Pipeworx](https://pipeworx.io) — an MCP gateway connecting AI agents 
 `https://api.e-stat.go.jp/rest/3.0/app/json/` — `appId` as query param.
 
 Default language is Japanese (`J`); pass `lang: "E"` for English where available.
+
+## Timeouts
+
+e-Stat is slow and sets no timeout of its own. Measured 2026-08-27: `/getStatsList`
+takes ~26s uncached, and `/getDataCatalog` ran past the gateway's 75s request deadline
+at page sizes 1, 5 and 20 alike — page size is not what makes it slow.
+
+Each request therefore carries its own budget — 55s (about 20s under the gateway's
+own 75s deadline), and 35s for `list_data_catalog`, which is the endpoint that does
+not finish at all rather than one that finishes late. Exceeding the budget returns a
+soft failure rather than hanging:
+
+```json
+{ "found": false, "reason": "upstream_timeout", "endpoint": "...", "timeout_ms": 35000,
+  "hint": "... use search_stats ..." }
+```
+
+`limit` defaults to 20 on `list_data_catalog` (100 on `get_data`, 20 on `search_stats`),
+so a bare call is already bounded — page size was never what made the catalog slow.
+The catalog accepts e-Stat's own narrowing params (`query`, `data_type`, `stats_code`,
+`survey_years`); during the 2026-08-27 stall none of them shortened it, so treat them
+as filters rather than as a fix. `search_stats` searches the same tables and answered
+in seconds throughout.
 
 ## Quick Start
 
@@ -66,9 +89,45 @@ directly, instead of just this one's:
 }
 ```
 
-Both URLs reach the same gateway and the same 1476+ data sources. The
+Both URLs reach the same gateway and the same 1679+ data sources. The
 only difference is which pack's tools are listed **directly**; `ask_pipeworx`
 reaches all of them from either one.
+
+## No MCP client? Call it over HTTP
+
+```bash
+curl -X POST https://gateway.pipeworx.io/v1/tools/search_stats \
+  -H 'Content-Type: application/json' \
+  -d '{"query":"失業率"}'
+```
+
+No account needed for the first calls. Inspect any tool: `GET https://gateway.pipeworx.io/v1/tools/search_stats`. Find one: `POST https://gateway.pipeworx.io/v1/tools/search_packs` with `{"query":"..."}`.
+
+## Standalone (no gateway account)
+
+This package also runs as a local stdio MCP server — no Pipeworx account, no
+gateway round-trip:
+
+```json
+{
+  "mcpServers": {
+    "estat-japan": {
+      "command": "npx",
+      "args": ["-y", "@pipeworx/mcp-estat-japan"]
+    }
+  }
+}
+```
+
+Or run it directly to confirm it starts:
+
+```bash
+npx -y @pipeworx/mcp-estat-japan
+```
+
+It speaks MCP over stdin/stdout and answers `initialize`/`tools/list`/`tools/call`
+for **only** this pack's tools — none of the shared meta-tools the gateway
+connection above adds. Same source, same tools, no ask_pipeworx routing.
 
 ## Using with ask_pipeworx
 
@@ -89,13 +148,3 @@ The gateway picks the right tool and fills the arguments automatically.
 ## License
 
 MIT
-
-## No MCP client? Call it over HTTP
-
-```bash
-curl -X POST https://gateway.pipeworx.io/v1/tools/search_stats \
-  -H 'Content-Type: application/json' \
-  -d '{"query":"失業率"}'
-```
-
-No account needed for the first calls. Inspect any tool: `GET https://gateway.pipeworx.io/v1/tools/search_stats`. Find one: `POST https://gateway.pipeworx.io/v1/tools/search_packs` with `{"query":"..."}`.

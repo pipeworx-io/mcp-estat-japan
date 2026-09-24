@@ -3,7 +3,7 @@
   "name": "io.github.pipeworx-io/estat-japan",
   "title": "Estat Japan",
   "description": "e-Stat (Japan) MCP — government statistics",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "websiteUrl": "https://pipeworx.io/packs/estat-japan",
   "repository": {
     "url": "https://github.com/pipeworx-io/mcp-estat-japan",
