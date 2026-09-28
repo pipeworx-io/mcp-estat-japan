@@ -233,8 +233,32 @@ async function estatGet(
   // e-Stat embeds status codes inside the payload — propagate as errors
   const root = (data as { GET_STATS_LIST?: { RESULT?: { STATUS?: number; ERROR_MSG?: string } }; GET_STATS_DATA?: { RESULT?: { STATUS?: number; ERROR_MSG?: string } }; GET_META_INFO?: { RESULT?: { STATUS?: number; ERROR_MSG?: string } }; GET_DATA_CATALOG?: { RESULT?: { STATUS?: number; ERROR_MSG?: string } } });
   const env = root.GET_STATS_LIST ?? root.GET_STATS_DATA ?? root.GET_META_INFO ?? root.GET_DATA_CATALOG;
-  if (env?.RESULT?.STATUS && env.RESULT.STATUS !== 0) {
-    throw new Error(`e-Stat status ${env.RESULT.STATUS}: ${env.RESULT.ERROR_MSG ?? 'unknown'}`);
+  // STATUS values verbatim from the live API, 2026-09-28 (fleet #2496). Both
+  // below are the caller's miss and used to throw as a Pipeworx defect:
+  //   1   "正常に終了しましたが、該当データはありませんでした。" — completed
+  //       normally, no matching data: the filters matched nothing.
+  //   100+ (seen: 300) "統計表ID…のデータは存在しません" — no such table.
+  const status = Number(env?.RESULT?.STATUS ?? 0);
+  const msg = env?.RESULT?.ERROR_MSG ?? 'unknown';
+  if (status === 1) {
+    return {
+      ...(data as Record<string, unknown>),
+      empty_reason: 'no_match',
+      note: `e-Stat found the request valid but no data matched it (${msg}). Check filter codes with get_metadata, or widen them.`,
+    };
+  }
+  if (status !== 0 && /存在しません|does not exist/i.test(msg)) {
+    const id = params.get('statsDataId');
+    return {
+      error: 'not_found',
+      message:
+        `e-Stat has no ${id ? `statistics table "${id}"` : 'such record'} (status ${status}: ${msg}). ` +
+        `Call search_stats({query: "..."}) to find a statsDataId.`,
+      ...(id ? { stats_data_id: id } : {}),
+    };
+  }
+  if (status !== 0) {
+    throw new Error(`e-Stat status ${status}: ${msg}`);
   }
   return data;
 }
