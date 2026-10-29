@@ -1,12 +1,20 @@
 {
   "name": "@pipeworx/mcp-estat-japan",
-  "version": "0.1.2",
+  "version": "0.2.0",
   "description": "e-Stat (Japan) MCP — government statistics",
   "type": "module",
-  "main": "src/index.ts",
-  "types": "src/index.ts",
+  "main": "lib/index.js",
+  "exports": {
+    ".": "./lib/index.js",
+    "./tools.json": "./tools.json",
+    "./package.json": "./package.json"
+  },
   "bin": {
     "mcp-estat-japan": "bin/cli.js"
+  },
+  "files": ["bin/", "lib/", "tools.json", "server.json"],
+  "engines": {
+    "node": ">=18"
   },
   "keywords": ["mcp", "mcp-server", "model-context-protocol", "pipeworx", "estat-japan"],
   "license": "MIT",
@@ -14,19 +22,12 @@
     "type": "git",
     "url": "git+https://github.com/pipeworx-io/mcp-estat-japan.git"
   },
-  "scripts": {
-    "typecheck": "tsc --noEmit"
-  },
-  "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.30.0",
-    "tsx": "^4.19.0"
-  },
-  "devDependencies": {
-    "typescript": "^5.9.3",
-    "@cloudflare/workers-types": "^4.20260405.1"
-  },
+  "mcpName": "io.github.pipeworx-io/estat-japan",
   "pipeworx": {
-    "sourceHash": "v1-9ad2f1b89a41efbebe86da88dacea71bc1e362797fcf335738863bbd20dc8d33",
-    "sourceCommit": "a00767651388cfd017fdeac82188622721db2051"
+    "mode": "gateway",
+    "slug": "estat-japan",
+    "gatewaySlug": "estat-japan",
+    "sourceHash": "v1-dda8ab2f153dc39203f780dc51efc82e050a03b5f2ec4c99e52816cfc71f9dd2",
+    "sourceCommit": "bb047243cf27f32453103de186b8e6a8b6a1ce79"
   }
 }
