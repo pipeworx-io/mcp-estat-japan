@@ -1,6 +1,6 @@
 {
   "name": "@pipeworx/mcp-estat-japan",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "e-Stat (Japan) MCP — government statistics",
   "type": "module",
   "main": "lib/index.js",
@@ -27,7 +27,7 @@
     "mode": "gateway",
     "slug": "estat-japan",
     "gatewaySlug": "estat-japan",
-    "sourceHash": "v1-dda8ab2f153dc39203f780dc51efc82e050a03b5f2ec4c99e52816cfc71f9dd2",
-    "sourceCommit": "bb047243cf27f32453103de186b8e6a8b6a1ce79"
+    "sourceHash": "v1-a06d15117ed22a29afb938b3abccbf1c65eb398e153fca7039b09bee0aff8726",
+    "sourceCommit": "d35e32c1ffe988e24d391dedb35666387fd2b3d6"
   }
 }
